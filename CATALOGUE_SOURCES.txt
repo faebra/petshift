@@ -1,0 +1,23 @@
+PETSHIFT / PET CATALOGUE
+Snapshot date: 13 November 2026
+
+Primary directory: https://www.playadopt.me/discover/pets
+Sitemap cross-check: https://www.playadopt.me/sitemap.xml
+
+The published directory returned 843 entries: 801 pets and 42 eggs.
+All 801 non-egg entries are available in the Settings picker.
+Every pet-directory route in the sitemap was represented in that data.
+Names, rarities, and origins follow the official directory.
+
+Artwork uses the public image asset IDs published with directory entries.
+761 pet thumbnails are bundled from Roblox's public thumbnail service.
+40 entries use a built-in PetShift icon where no usable thumbnail returned.
+All 801 pets can be selected regardless of artwork availability.
+Normal, Neon, and Mega Neon choices change the pet labels and display glow;
+the bundled thumbnail shows the base pet design.
+
+These files contain an offline catalogue. Future game additions require
+an updated catalogue. The application makes no network requests.
+
+PetShift is independent. Roblox and Adopt Me assets remain the property
+of their respective owners. This interface is not an official game tool.
